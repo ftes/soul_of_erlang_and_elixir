@@ -32,7 +32,7 @@ defmodule MySystemWeb.Math do
       case Integer.parse(str_input) do
         :error -> outcome(str_input, "invalid input")
         {_number, rest} when byte_size(rest) > 0 -> outcome(str_input, "invalid input")
-        {number, ""} when number < 0 -> outcome(str_input, "invalid input")
+        # {number, ""} when number < 0 -> outcome(str_input, "invalid input")
         {number, ""} -> start_sum(number)
       end
 
