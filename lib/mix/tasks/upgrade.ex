@@ -6,7 +6,7 @@ defmodule Mix.Tasks.MySystem.Upgrade do
 
   def run(_args) do
     Node.start(:"upgrader@127.0.0.1")
-    Node.set_cookie(:super_secret)
+    Node.set_cookie(:R2rFacBWe2cmw8gcEwpZOh)
     Node.connect(:"my_system_1@127.0.0.1")
 
     Enum.each(

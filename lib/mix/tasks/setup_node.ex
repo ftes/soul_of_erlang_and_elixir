@@ -20,6 +20,6 @@ defmodule Mix.Tasks.MySystem.SetupNode do
       |> Enum.find(&(not MapSet.member?(nodes, &1)))
 
     Node.start(:"#{node_name}@127.0.0.1")
-    Node.set_cookie(:super_secret)
+    Node.set_cookie(:R2rFacBWe2cmw8gcEwpZOh)
   end
 end

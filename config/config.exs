@@ -21,7 +21,7 @@ config :my_system, MySystemWeb.Endpoint,
   http: [thousand_island_options: [num_acceptors: 10]],
   pubsub_server: MySystem.PubSub,
   live_view: [signing_salt: "af4jKdtR"],
-  secret_key_base: "MzPIcum8PemED54B0UPoqmQ+yeo/tbGG/wg0BqOTxdLltiM0oj5yTJv8xkb6ZM/A"
+  secret_key_base: "LWap3EvdRAuBRO8TgwqnNqrvGY2mOFVb710GFAFPcCSOOGEYV97ggTepc0Qn2Qwc"
 
 # Configure esbuild (the version is required)
 config :esbuild,

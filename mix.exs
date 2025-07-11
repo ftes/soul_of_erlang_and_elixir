@@ -88,7 +88,7 @@ defmodule MySystem.MixProject do
   end
 
   defp releases,
-    do: [my_system: [cookie: "super_secret"]]
+    do: [my_system: [cookie: "R2rFacBWe2cmw8gcEwpZOh"]]
 
   def cli,
     do: [preferred_envs: [release: :prod, upgrade: :prod]]
