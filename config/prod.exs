@@ -7,7 +7,14 @@ import Config
 # before starting your production server.
 config :my_system, MySystemWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json",
-  server: true
+  server: true,
+  https: [
+    port: 443,
+    cipher_suite: :strong,
+    otp_app: :my_system,
+    keyfile: "/etc/letsencrypt/live/dcon-elixir.ftes.de/privkey.pem",
+    certfile: "/etc/letsencrypt/live/dcon-elixir.ftes.de/cert.pem"
+  ]
 
 # Do not print debug messages in production
 config :logger, level: :info

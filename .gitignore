@@ -1,5 +1,6 @@
 # The directory Mix will write compiled artifacts to.
 /_build/
+/build-output/
 
 # If you run "mix test --cover", coverage assets end up here.
 /cover/
@@ -36,4 +37,3 @@ npm-debug.log
 /assets/node_modules/
 
 priv/static/favicon-*.ico
-

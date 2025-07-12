@@ -23,7 +23,7 @@ end
 if config_env() == :prod do
   config :my_system, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
-  config :my_system, MySystemWeb.Endpoint, url: [host: "localhost", scheme: "http"]
+  config :my_system, MySystemWeb.Endpoint, url: [host: "dcon-elixir.ftes.de"]
 
   # ## SSL Support
   #

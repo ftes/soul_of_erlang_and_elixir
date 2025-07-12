@@ -10,7 +10,7 @@ defmodule MySystemWeb.Endpoint do
         %{"suffix" => suffix} -> String.to_integer(suffix)
       end
 
-    super([http: [port: 4000 + suffix - 1]] ++ opts)
+    super([http: [port: 80 + suffix - 1]] ++ opts)
   end
 
   # The session will be stored in the cookie and signed,
