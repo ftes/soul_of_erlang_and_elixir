@@ -8,6 +8,7 @@ defmodule MySystem.Application do
   @impl true
   def start(_type, _args) do
     MySystem.LoadControl.set_num_schedulers(1)
+    MySystem.BulletinBoard.start()
 
     children = [
       MySystem.LoadControl,

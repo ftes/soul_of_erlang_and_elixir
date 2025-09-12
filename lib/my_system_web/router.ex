@@ -20,6 +20,8 @@ defmodule MySystemWeb.Router do
 
     live "/", Math
 
+    live "/bulletin_board/:topic", BulletinBoard
+
     live_dashboard "/dashboard",
       metrics: MySystemWeb.Telemetry,
       additional_pages: [load_control: MySystemWeb.LoadControl]
