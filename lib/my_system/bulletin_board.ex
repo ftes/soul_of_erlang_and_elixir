@@ -4,6 +4,8 @@ defmodule MySystem.BulletinBoard do
 
   alias :mnesia, as: Mnesia
 
+  @attributes [:id, :timestamp, :author, :text, :topic]
+
   def start() do
     Mnesia.create_schema([node()])
     Mnesia.start()
@@ -32,6 +34,7 @@ defmodule MySystem.BulletinBoard do
       }])
     end)
     |> unwrap_atomic()
+    |> result_to_map()
   end
 
 
@@ -51,7 +54,7 @@ defmodule MySystem.BulletinBoard do
     end
 
     status = Mnesia.create_table(Post,
-      attributes: [:id, :timestamp, :author, :text, :topic],
+      attributes: @attributes,
       type: :ordered_set,
       disc_copies: [node()]
     )
@@ -69,5 +72,13 @@ defmodule MySystem.BulletinBoard do
   defp unwrap_atomic({:atomic, :ok}), do: :ok
   defp unwrap_atomic({:atomic, result}), do: {:ok, result}
   defp unwrap_atomic({:aborted, reason}), do: {:error, reason}
+
+  defp result_to_map({:ok, result}) do
+    {:ok, result |> Enum.map(fn post ->
+          @attributes
+          |> Enum.zip(post)
+          |> Map.new()
+    end)}
+  end
 
 end
