@@ -8,7 +8,9 @@ defmodule MySystemWeb.BulletinBoard do
   def mount(_params, _session, socket) do
     {:ok, socket
           |> assign(:author, "")
-          |> assign(:text, "")}
+          |> assign(:text, "")
+          |> assign(:show_form, true)
+          |> assign(:markdown_feedback, "")}
   end
 
   @impl Phoenix.LiveView
@@ -27,15 +29,27 @@ defmodule MySystemWeb.BulletinBoard do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-      <h1 class="text-3xl">{@long_topic}</h1>
-      <form class="p-4 bg-slate-200 rounded-lg" phx-submit="post_submitted">
-        <textarea class="block" name="text" rows="10" cols="100">{@text} </textarea>
-        <input class="mt-2 block" type="text" name="author" value={@author} />
-      </form>
+      <h1 class="text-3xl mb-6">{@long_topic}</h1>
+      <div class="p-4 bg-slate-200 rounded-lg">
+        <button phx-click={JS.push("toggle-form")}>
+          <.icon :if={@show_form} name="hero-chevron-down" class="h-5 w-5" />
+          <.icon :if={!@show_form} name="hero-chevron-right" class="h-5 w-5" />
+        </button>
+        <form :if={@show_form} class="mt-4" phx-submit="post_submitted">
+          <div class="block">
+            <textarea class="block rounded-lg" name="text" rows="10" cols="80">{@text} </textarea>
+          </div>
+          <div class="mt-2 block">
+            <input class="mr-2 rounded-lg" type="text" name="author" value={@author} />
+            <input type="submit" value="Publish" class="cursor-pointer
+            bg-slate-50 p-2 rounded-lg hover:ring-2 hover:ring-blue-600 active:bg-blue-200" />
+          </div>
+        </form>
+      </div>
       <ul class="flex flex-col gap-2 mt-4">
         <%= for post <- @posts do %>
           <li class="bg-slate-200 p-4 rounded-lg">
-            <p class="text-xl">{post.text}</p>
+            <pre class="text-xl">{post.text}</pre>
             <div class="text-right">{post.author}</div>
           </li>
         <% end %>
@@ -57,6 +71,12 @@ defmodule MySystemWeb.BulletinBoard do
   end
 
   @impl true
+  def handle_event("toggle-form", _params, socket) do
+    {:noreply, socket
+               |> assign(:show_form, not socket.assigns.show_form)}
+  end
+
+  @impl true
   def handle_info({:new_post, _id}, socket) do
     load_posts(socket, Map.fetch!(socket.assigns, :topic))
   end
@@ -65,7 +85,6 @@ defmodule MySystemWeb.BulletinBoard do
     if reason != :normal do
       {:noreply, put_flash(socket, :error, "Posting of Message failed.")}
     else
-    # TODO: inspect reason and put a flash message when postin failed
       {:noreply, socket}
     end
   end
