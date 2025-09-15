@@ -8,7 +8,6 @@ defmodule MySystem.Application do
   @impl true
   def start(_type, _args) do
     MySystem.LoadControl.set_num_schedulers(1)
-    MySystem.BulletinBoard.start()
 
     children = [
       MySystem.LoadControl,
@@ -16,6 +15,7 @@ defmodule MySystem.Application do
       {DNSCluster, query: Application.get_env(:my_system, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: MySystem.PubSub},
       MySystem.Math,
+      MySystem.BulletinBoard,
       {MySystemWeb.Endpoint, http: [port: 4001]}
     ]
 

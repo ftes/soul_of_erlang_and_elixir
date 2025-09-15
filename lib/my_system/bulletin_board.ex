@@ -1,4 +1,5 @@
 defmodule MySystem.BulletinBoard do
+  use Parent.Supervisor
 
   require Logger
 
@@ -6,19 +7,28 @@ defmodule MySystem.BulletinBoard do
 
   @attributes [:id, :timestamp, :author, :text, :topic]
 
-  def start() do
+  def start_link(_arg) do
     Mnesia.create_schema([node()])
     Mnesia.start()
     ensure_tables_exist()
+    Parent.Supervisor.start_link([], name: __MODULE__)
   end
 
-
   def publish_post(author, text, topic) do
-    id = Mnesia.dirty_update_counter(Counter, Post, 1)
-    Mnesia.transaction(fn ->
-      Mnesia.write({Post, id, DateTime.utc_now(), author, text, topic})
-    end)
-    |> unwrap_atomic()
+    caller = self()
+
+    {:ok, pid} =
+      Parent.Client.start_child(
+        __MODULE__,
+        %{
+          start: {Task, :start_link, [fn -> :ok = save_post(author, text, topic) end]},
+          restart: :temporary,
+          ephemeral?: true,
+          meta: caller
+        }
+      )
+    Process.monitor(pid)
+    pid
   end
 
 
@@ -35,6 +45,19 @@ defmodule MySystem.BulletinBoard do
     end)
     |> unwrap_atomic()
     |> result_to_map()
+  end
+
+  def subscribe(topic) do
+    Phoenix.PubSub.subscribe(MySystem.PubSub, topic)
+  end
+
+  defp save_post(author, text, topic) do
+    id = Mnesia.dirty_update_counter(Counter, Post, 1)
+    Mnesia.transaction(fn ->
+      Mnesia.write({Post, id, DateTime.utc_now(), author, text, topic})
+    end)
+    |> unwrap_atomic()
+    |> maybe_notify_subscribers(topic, id)
   end
 
 
@@ -80,5 +103,11 @@ defmodule MySystem.BulletinBoard do
           |> Map.new()
     end)}
   end
+
+  defp maybe_notify_subscribers(:ok, topic, id) do
+    Phoenix.PubSub.broadcast!(MySystem.PubSub, topic, {:new_post, id})
+  end
+
+  defp maybe_notify_subscribers(error, _, _), do: error
 
 end

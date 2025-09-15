@@ -14,7 +14,10 @@ defmodule MySystemWeb.BulletinBoard do
   @impl Phoenix.LiveView
   def handle_params(%{"topic" => topic}, _uri, socket) do
     if topic == @buildingblocks or topic == @observability do
-      load_posts(socket, topic)
+      :ok = MySystem.BulletinBoard.subscribe(topic)
+      socket
+      |> make_long_topic_title(topic)
+      |> load_posts(topic)
     else
       # redirect to default if invalid
       push_navigate(socket, to: ~p"/bulletin_board/buildingblocks") |> then(&{:noreply, &1})
@@ -24,16 +27,16 @@ defmodule MySystemWeb.BulletinBoard do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-      <h1>Topic: {@topic}</h1>
-        <form phx-submit="post_submitted">
-          <textarea name="text" rows="10" cols="50">{@text} </textarea>
-          <input type="text" name="author" value={@author} />
-        </form>
-      <ul>
+      <h1 class="text-3xl">{@long_topic}</h1>
+      <form class="p-4 bg-slate-200 rounded-lg" phx-submit="post_submitted">
+        <textarea class="block" name="text" rows="10" cols="100">{@text} </textarea>
+        <input class="mt-2 block" type="text" name="author" value={@author} />
+      </form>
+      <ul class="flex flex-col gap-2 mt-4">
         <%= for post <- @posts do %>
-          <li>
-            <p>{post.text}</p>
-            <div>{post.author}</div>
+          <li class="bg-slate-200 p-4 rounded-lg">
+            <p class="text-xl">{post.text}</p>
+            <div class="text-right">{post.author}</div>
           </li>
         <% end %>
       </ul>
@@ -46,13 +49,35 @@ defmodule MySystemWeb.BulletinBoard do
     text = Map.get(params, "text", "")
     if (author != "" and text != "") do
       topic = Map.fetch!(socket.assigns, :topic)
-      :ok = MySystem.BulletinBoard.publish_post(author, text, topic)
-      # TODO: Perform publish in a separate process and fire PubSub on Success
-      # TODO: Reload Posts on PubSub Message
-      load_posts(socket, topic)
+      _pid = MySystem.BulletinBoard.publish_post(author, text, topic)
+      {:noreply, socket}
     else
       {:noreply, socket}
     end
+  end
+
+  @impl true
+  def handle_info({:new_post, _id}, socket) do
+    load_posts(socket, Map.fetch!(socket.assigns, :topic))
+  end
+
+  def handle_info({:DOWN, _ref, :process, _pid, reason}, socket) do
+    if reason != :normal do
+      {:noreply, put_flash(socket, :error, "Posting of Message failed.")}
+    else
+    # TODO: inspect reason and put a flash message when postin failed
+      {:noreply, socket}
+    end
+  end
+
+  defp make_long_topic_title(socket, @buildingblocks) do
+    socket
+    |> assign(:long_topic, "What are your building blocks for robust systems?")
+  end
+
+  defp make_long_topic_title(socket, @observability) do
+    socket
+    |> assign(:long_topic, "How do you find a misbehaving part of your software?")
   end
 
   defp load_posts(socket, topic) do
