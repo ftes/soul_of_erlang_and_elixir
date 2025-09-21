@@ -145,6 +145,7 @@ defmodule MySystemWeb.CoreComponents do
   attr :id, :any, default: nil
   attr :name, :any
   attr :label, :string, default: nil
+  attr :sr_label, :string, default: nil
   attr :value, :any
 
   attr :type, :string,
@@ -198,6 +199,7 @@ defmodule MySystemWeb.CoreComponents do
             class={@class || "checkbox checkbox-sm"}
             {@rest}
           />{@label}
+          <span :if={@sr_label} class="sr-only">{@sr_label}</span>
         </span>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
@@ -209,6 +211,7 @@ defmodule MySystemWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label>
+        <span :if={@sr_label} class="sr-only">{@sr_label}</span>
         <span :if={@label} class="label mb-1">{@label}</span>
         <select
           id={@id}
@@ -230,6 +233,7 @@ defmodule MySystemWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label>
+        <span :if={@sr_label} class="sr-only">{@sr_label}</span>
         <span :if={@label} class="label mb-1">{@label}</span>
         <textarea
           id={@id}
@@ -251,6 +255,7 @@ defmodule MySystemWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label>
+        <span :if={@sr_label} class="sr-only">{@sr_label}</span>
         <span :if={@label} class="label mb-1">{@label}</span>
         <input
           type={@type}

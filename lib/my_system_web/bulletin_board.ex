@@ -35,7 +35,7 @@ defmodule MySystemWeb.BulletinBoard do
     ~H"""
     <Layouts.app flash={@flash}>
       <.header>{long_topic(@topic)}</.header>
-      <div class="p-4 bg-slate-200 rounded-lg">
+      <div class="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg">
         <button phx-click={
           JS.toggle(to: "#form") |> JS.toggle_class("rotate-180", to: "#toggle-form-icon")
         }>
@@ -44,6 +44,7 @@ defmodule MySystemWeb.BulletinBoard do
         <.form for={@form} id="form" class="mt-4" phx-change="validate" phx-submit="submit">
           <div class="block">
             <.input
+              sr_label="Text"
               placeholder="Your post"
               field={@form[:text]}
               type="textarea"
@@ -53,7 +54,7 @@ defmodule MySystemWeb.BulletinBoard do
             />
           </div>
           <div class="mt-2 block">
-            <.input placeholder="Your name" field={@form[:author]} phx-debounce />
+            <.input sr_label="Author" placeholder="Your name" field={@form[:author]} phx-debounce />
             <.button type="submit" variant="primary" phx-disable-with="Publishing...">
               Publish
             </.button>
@@ -61,7 +62,11 @@ defmodule MySystemWeb.BulletinBoard do
         </.form>
       </div>
       <ul class="flex flex-col gap-2 mt-4" id="posts" phx-update="stream">
-        <li :for={{dom_id, post} <- @streams.posts} id={dom_id} class="bg-slate-200 p-4 rounded-lg">
+        <li
+          :for={{dom_id, post} <- @streams.posts}
+          id={dom_id}
+          class="bg-slate-200 dark:bg-slate-700 p-4 rounded-lg"
+        >
           <pre class="text-xl">{post.text}</pre>
           <div class="text-right">{post.author}</div>
         </li>
