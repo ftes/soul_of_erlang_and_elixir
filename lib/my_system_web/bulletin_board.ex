@@ -60,8 +60,8 @@ defmodule MySystemWeb.BulletinBoard do
           </div>
         </.form>
       </div>
-      <ul class="flex flex-col gap-2 mt-4">
-        <li :for={post <- @posts} class="bg-slate-200 p-4 rounded-lg">
+      <ul class="flex flex-col gap-2 mt-4" id="posts" phx-update="stream">
+        <li :for={{dom_id, post} <- @streams.posts} id={dom_id} class="bg-slate-200 p-4 rounded-lg">
           <pre class="text-xl">{post.text}</pre>
           <div class="text-right">{post.author}</div>
         </li>
@@ -89,8 +89,8 @@ defmodule MySystemWeb.BulletinBoard do
   end
 
   @impl true
-  def handle_info({:new_post, _id}, socket) do
-    load_posts(socket) |> noreply()
+  def handle_info({:new_post, post}, socket) do
+    stream_insert(socket, :posts, post, at: 0) |> noreply()
   end
 
   def handle_info({:DOWN, _ref, :process, _pid, reason}, socket) do
@@ -103,7 +103,7 @@ defmodule MySystemWeb.BulletinBoard do
 
   defp load_posts(socket) do
     {:ok, posts} = MySystem.BulletinBoard.list_posts(socket.assigns.topic, 0, 100)
-    assign(socket, :posts, posts)
+    stream(socket, :posts, Enum.reverse(posts), reset: true)
   end
 
   defp change_post(params) do

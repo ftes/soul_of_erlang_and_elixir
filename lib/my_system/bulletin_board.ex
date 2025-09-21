@@ -61,7 +61,7 @@ defmodule MySystem.BulletinBoard do
       Mnesia.write({Post, id, DateTime.utc_now(), author, text, topic})
     end)
     |> unwrap_atomic()
-    |> maybe_notify_subscribers(topic, id)
+    |> maybe_notify_subscribers(topic, %{id: id, text: text, author: author})
   end
 
   defp ensure_tables_exist() do
@@ -116,8 +116,8 @@ defmodule MySystem.BulletinBoard do
      end)}
   end
 
-  defp maybe_notify_subscribers(:ok, topic, id) do
-    Phoenix.PubSub.broadcast!(MySystem.PubSub, topic, {:new_post, id})
+  defp maybe_notify_subscribers(:ok, topic, payload) do
+    Phoenix.PubSub.broadcast!(MySystem.PubSub, topic, {:new_post, payload})
   end
 
   defp maybe_notify_subscribers(error, _, _), do: error
