@@ -11,12 +11,12 @@ defmodule MySystem.Application do
 
     children = [
       MySystem.LoadControl,
+      MySystem.BulletinBoard,
       MySystemWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:my_system, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: MySystem.PubSub},
       MySystem.Math,
-      MySystem.BulletinBoard,
-      {MySystemWeb.Endpoint, http: [port: 4001]}
+      MySystemWeb.Endpoint
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

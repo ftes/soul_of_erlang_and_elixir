@@ -4,8 +4,14 @@ import Config
 # you can enable the server option below.
 config :my_system, MySystemWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "Ielk1QnQoBzOFrWtHy1Csm8dUGr0gVUAxYlEE3qGjA4uKMbBKdE/31POiKVdfFQT",
+  secret_key_base: "+qtvic90rol+yxaK6qx96QWpk1XBJo355LTjkNfEFkT61IeuvBcsR25ULcBDJUuD",
   server: false
+
+# In test we don't send emails
+config :my_system, MySystem.Mailer, adapter: Swoosh.Adapters.Test
+
+# Disable swoosh api client as it is only required for production adapters
+config :swoosh, :api_client, false
 
 # Print only warnings and errors during test
 config :logger, level: :warning

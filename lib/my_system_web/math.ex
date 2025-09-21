@@ -10,17 +10,20 @@ defmodule MySystemWeb.Math do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="sumForm">
-      <form phx-submit="sum_submitted">
-        <input type="number" name="number" value={@number} />
-      </form>
+    <Layouts.app flash={@flash}>
+      <div class="text-lg">
+        <form phx-submit="sum_submitted">
+          <.input label="Input" type="number" name="number" value={@number} />
+          <.button variant="primary">Calculate</.button>
+        </form>
 
-      <div>
-        <%= for operation <- @operations do %>
-          <div>∑(1..{operation.input}) = {operation.result}</div>
-        <% end %>
+        <div class="mt-4">
+          <%= for operation <- @operations do %>
+            <div>∑(1..{operation.input}) = {operation.result}</div>
+          <% end %>
+        </div>
       </div>
-    </div>
+    </Layouts.app>
     """
   end
 

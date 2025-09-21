@@ -6,12 +6,13 @@
 set -e
 
 # Configuration
-LOCAL_DIR="build-output"
+LOCAL_DIR="tmp/build-output"
 REMOTE_HOST="root@dcon-elixir.ftes.de"
 REMOTE_DIR="/app"
 ZIP_FILE="my_system.tar.gz"
 PLATFORM=linux/amd64
 
+mkdir -p $LOCAL_DIR
 docker build --platform $PLATFORM -t my-system .
 docker create --platform $PLATFORM --name temp-container my-system
 docker cp temp-container:/app/_build/prod/rel/my_system $LOCAL_DIR
@@ -43,7 +44,7 @@ tar -xzf /tmp/my_system.tar.gz --strip-components=1
 rm /tmp/my_system.tar.gz
 
 # Start server
-/app/bin/my_system daemon
+PHX_SERVER=true /app/bin/my_system daemon
 EOF
 
 echo "Cleaning up local archive..."

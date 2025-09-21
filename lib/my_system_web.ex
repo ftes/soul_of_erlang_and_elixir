@@ -38,9 +38,9 @@ defmodule MySystemWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller,
-        formats: [:html, :json],
-        layouts: [html: MySystemWeb.Layouts]
+      use Phoenix.Controller, formats: [:html, :json]
+
+      use Gettext, backend: MySystemWeb.Gettext
 
       import Plug.Conn
 
@@ -50,8 +50,7 @@ defmodule MySystemWeb do
 
   def live_view do
     quote do
-      use Phoenix.LiveView,
-        layout: {MySystemWeb.Layouts, :app}
+      use Phoenix.LiveView
 
       unquote(html_helpers())
     end
@@ -80,13 +79,17 @@ defmodule MySystemWeb do
 
   defp html_helpers do
     quote do
+      # Translation
+      use Gettext, backend: MySystemWeb.Gettext
+
       # HTML escaping functionality
       import Phoenix.HTML
-      # Core UI components and translation
+      # Core UI components
       import MySystemWeb.CoreComponents
 
-      # Shortcut for generating JS commands
+      # Common modules used in templates
       alias Phoenix.LiveView.JS
+      alias MySystemWeb.Layouts
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())

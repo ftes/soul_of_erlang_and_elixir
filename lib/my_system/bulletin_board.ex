@@ -27,21 +27,24 @@ defmodule MySystem.BulletinBoard do
           meta: caller
         }
       )
+
     Process.monitor(pid)
     pid
   end
 
-
   def list_posts(topic, start_id, pagesize \\ 100) do
     Mnesia.transaction(fn ->
-      Mnesia.select(Post, [{
-        {Post, :"$1", :"$2", :"$3", :"$4", :"$5"},
-        [
-          {:>, :"$1", start_id},
-          {:<, :"$1", start_id + pagesize},
-          {:"=:=", :"$5", topic}],
-        [:"$$"]
-      }])
+      Mnesia.select(Post, [
+        {
+          {Post, :"$1", :"$2", :"$3", :"$4", :"$5"},
+          [
+            {:>, :"$1", start_id},
+            {:<, :"$1", start_id + pagesize},
+            {:"=:=", :"$5", topic}
+          ],
+          [:"$$"]
+        }
+      ])
     end)
     |> unwrap_atomic()
     |> result_to_map()
@@ -53,6 +56,7 @@ defmodule MySystem.BulletinBoard do
 
   defp save_post(author, text, topic) do
     id = Mnesia.dirty_update_counter(Counter, Post, 1)
+
     Mnesia.transaction(fn ->
       Mnesia.write({Post, id, DateTime.utc_now(), author, text, topic})
     end)
@@ -60,33 +64,39 @@ defmodule MySystem.BulletinBoard do
     |> maybe_notify_subscribers(topic, id)
   end
 
-
   defp ensure_tables_exist() do
-    status = Mnesia.create_table(Counter,
-      attributes: [:table, :counter],
-      type: :set,
-      disc_copies: [node()]
-    )
+    status =
+      Mnesia.create_table(Counter,
+        attributes: [:table, :counter],
+        type: :set,
+        disc_copies: [node()]
+      )
+
     case status do
       {:atomic, :ok} ->
         Logger.info("Table Counter successfully created")
+
       {:aborted, {:already_exists, Counter}} ->
         Logger.info("Table Counter already exists")
+
       other ->
         Logger.error("Could not create Counter table, reason #{inspect(other)}")
     end
 
-    status = Mnesia.create_table(Post,
-      attributes: @attributes,
-      type: :ordered_set,
-      disc_copies: [node()]
-    )
+    status =
+      Mnesia.create_table(Post,
+        attributes: @attributes,
+        type: :ordered_set,
+        disc_copies: [node()]
+      )
 
     case status do
       {:atomic, :ok} ->
         Logger.info("Table Post successfully created")
+
       {:aborted, {:already_exists, Post}} ->
         Logger.info("Table Post already exists")
+
       other ->
         Logger.error("Could not create Post table, reason #{inspect(other)}")
     end
@@ -97,11 +107,13 @@ defmodule MySystem.BulletinBoard do
   defp unwrap_atomic({:aborted, reason}), do: {:error, reason}
 
   defp result_to_map({:ok, result}) do
-    {:ok, result |> Enum.map(fn post ->
-          @attributes
-          |> Enum.zip(post)
-          |> Map.new()
-    end)}
+    {:ok,
+     result
+     |> Enum.map(fn post ->
+       @attributes
+       |> Enum.zip(post)
+       |> Map.new()
+     end)}
   end
 
   defp maybe_notify_subscribers(:ok, topic, id) do
@@ -109,5 +121,4 @@ defmodule MySystem.BulletinBoard do
   end
 
   defp maybe_notify_subscribers(error, _, _), do: error
-
 end
