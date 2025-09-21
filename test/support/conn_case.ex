@@ -28,6 +28,7 @@ defmodule MySystemWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import MySystemWeb.ConnCase
+      import PhoenixTest
     end
   end
 

@@ -3,8 +3,7 @@ defmodule MySystemWeb.Math do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    socket = assign(socket, number: "", operations: [])
-    {:ok, socket}
+    assign(socket, number: "", operations: []) |> ok()
   end
 
   @impl Phoenix.LiveView
@@ -12,15 +11,15 @@ defmodule MySystemWeb.Math do
     ~H"""
     <Layouts.app flash={@flash}>
       <div class="text-lg">
-        <form phx-submit="sum_submitted">
+        <form phx-submit="submit">
           <.input label="Input" type="number" name="number" value={@number} />
           <.button variant="primary">Calculate</.button>
         </form>
 
         <div class="mt-4">
-          <%= for operation <- @operations do %>
-            <div>∑(1..{operation.input}) = {operation.result}</div>
-          <% end %>
+          <div :for={operation <- @operations} data-operation>
+            ∑(1..{operation.input}) = {operation.result}
+          </div>
         </div>
       </div>
     </Layouts.app>
@@ -28,7 +27,7 @@ defmodule MySystemWeb.Math do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("sum_submitted", params, socket) do
+  def handle_event("submit", params, socket) do
     str_input = Map.fetch!(params, "number")
 
     operation =
@@ -39,17 +38,15 @@ defmodule MySystemWeb.Math do
         {number, ""} -> start_sum(number)
       end
 
-    socket = update(socket, :operations, &[operation | &1])
-
-    {:noreply, socket}
+    update(socket, :operations, &[operation | &1]) |> noreply()
   end
 
   @impl Phoenix.LiveView
   def handle_info({:sum, pid, result}, socket),
-    do: {:noreply, set_result(socket, pid, result)}
+    do: set_result(socket, pid, result) |> noreply()
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, socket),
-    do: {:noreply, set_result(socket, pid, :error)}
+    do: set_result(socket, pid, :error) |> noreply()
 
   defp start_sum(number) do
     pid = MySystem.Math.sum(number)

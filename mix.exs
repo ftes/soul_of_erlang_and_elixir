@@ -66,7 +66,8 @@ defmodule MySystem.MixProject do
       {:bandit, "~> 1.5"},
       {:parent, "~> 0.12.0"},
       {:ecto, "~> 3.13"},
-      {:phoenix_ecto, "~> 4.0"}
+      {:phoenix_ecto, "~> 4.0"},
+      {:phoenix_test, "~> 0.8.1", only: :test, runtime: false}
     ]
   end
 
