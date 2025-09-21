@@ -9,7 +9,6 @@ defmodule MySystemWeb.BulletinBoard do
     socket
     |> assign(:form, to_form(%{}, as: :post))
     |> assign(:show_form, true)
-    |> assign(:markdown_feedback, "")
     |> ok()
   end
 
