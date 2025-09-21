@@ -21,7 +21,7 @@ defmodule MySystem.MixProject do
   def application do
     [
       mod: {MySystem.Application, []},
-      extra_applications: [:logger, :runtime_tools],
+      extra_applications: [:logger, :runtime_tools, :os_mon],
       included_applications: [:mnesia]
     ]
   end
