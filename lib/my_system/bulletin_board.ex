@@ -54,14 +54,27 @@ defmodule MySystem.BulletinBoard do
     Phoenix.PubSub.subscribe(MySystem.PubSub, topic)
   end
 
-  defp save_post(author, text, topic) do
+  def delete_post(topic, id) do
+    Mnesia.transaction(fn ->
+      Mnesia.delete({Post, id})
+    end)
+    |> unwrap_atomic()
+    |> maybe_notify_subscribers(topic, :deleted_post, %{id: id})
+  end
+
+  def save_post(author, text, topic) do
     id = Mnesia.dirty_update_counter(Counter, Post, 1)
 
     Mnesia.transaction(fn ->
       Mnesia.write({Post, id, DateTime.utc_now(), author, text, topic})
     end)
     |> unwrap_atomic()
-    |> maybe_notify_subscribers(topic, %{id: id, text: text, author: author})
+    |> maybe_notify_subscribers(topic, :new_post, %{id: id, text: text, author: author})
+  end
+
+  def reset() do
+    Mnesia.delete_table(Post)
+    ensure_tables_exist()
   end
 
   defp ensure_tables_exist() do
@@ -116,9 +129,9 @@ defmodule MySystem.BulletinBoard do
      end)}
   end
 
-  defp maybe_notify_subscribers(:ok, topic, payload) do
-    Phoenix.PubSub.broadcast!(MySystem.PubSub, topic, {:new_post, payload})
+  defp maybe_notify_subscribers(:ok, topic, event, payload) do
+    Phoenix.PubSub.broadcast!(MySystem.PubSub, topic, {event, payload})
   end
 
-  defp maybe_notify_subscribers(error, _, _), do: error
+  defp maybe_notify_subscribers(error, _, _, _), do: error
 end

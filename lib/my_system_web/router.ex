@@ -15,11 +15,25 @@ defmodule MySystemWeb.Router do
     plug :accepts, ["json"]
   end
 
+  import Plug.BasicAuth
+
+  pipeline :authenticated do
+    if Mix.env() != :test do
+      plug :basic_auth, username: "hello", password: "secret"
+    end
+  end
+
   scope "/", MySystemWeb do
     pipe_through :browser
 
     live "/", Math
     live "/bulletin_board/:topic", BulletinBoard
+  end
+
+  scope "/", MySystemWeb do
+    pipe_through [:browser, :authenticated]
+
+    live "/bulletin_board/:topic/admin", BulletinBoard, :admin
 
     live_dashboard "/dashboard",
       metrics: MySystemWeb.Telemetry,

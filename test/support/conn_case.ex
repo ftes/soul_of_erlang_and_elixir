@@ -33,6 +33,7 @@ defmodule MySystemWeb.ConnCase do
   end
 
   setup _tags do
+    ExUnit.Callbacks.on_exit(fn -> MySystem.BulletinBoard.reset() end)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

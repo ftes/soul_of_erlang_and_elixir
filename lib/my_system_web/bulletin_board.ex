@@ -4,11 +4,14 @@ defmodule MySystemWeb.BulletinBoard do
   @buildingblocks "buildingblocks"
   @observability "observability"
 
+  defguardp is_admin(socket) when socket.assigns.admin? == true
+
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     socket
     |> assign(:form, to_form(%{}, as: :post))
     |> assign(:show_form, true)
+    |> assign(:admin?, socket.assigns.live_action == :admin)
     |> ok()
   end
 
@@ -35,7 +38,7 @@ defmodule MySystemWeb.BulletinBoard do
     ~H"""
     <Layouts.app flash={@flash}>
       <.header>{long_topic(@topic)}</.header>
-      <div class="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg">
+      <div :if={not @admin?} class="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg">
         <button phx-click={
           JS.toggle(to: "#form") |> JS.toggle_class("rotate-180", to: "#toggle-form-icon")
         }>
@@ -65,10 +68,18 @@ defmodule MySystemWeb.BulletinBoard do
         <li
           :for={{dom_id, post} <- @streams.posts}
           id={dom_id}
-          class="bg-slate-200 dark:bg-slate-700 p-4 rounded-lg"
+          class="bg-slate-200 dark:bg-slate-700 p-4 rounded-lg relative"
         >
           <pre class="text-xl">{post.text}</pre>
           <div class="text-right">{post.author}</div>
+          <button
+            :if={@admin?}
+            class="absolute top-2 right-2 cursor-pointer hover:bg-slate-500 rounded"
+            phx-click={JS.push("delete_post", value: %{id: post.id})}
+          >
+            <span class="sr-only">Delete post {post.id}</span>
+            <.icon name="hero-x-mark" class="size-6" />
+          </button>
         </li>
       </ul>
     </Layouts.app>
@@ -93,9 +104,18 @@ defmodule MySystemWeb.BulletinBoard do
     end
   end
 
+  def handle_event("delete_post", %{"id" => id}, socket) when is_admin(socket) do
+    :ok = MySystem.BulletinBoard.delete_post(socket.assigns.topic, id)
+    noreply(socket)
+  end
+
   @impl true
   def handle_info({:new_post, post}, socket) do
     stream_insert(socket, :posts, post, at: 0) |> noreply()
+  end
+
+  def handle_info({:deleted_post, post}, socket) do
+    stream_delete(socket, :posts, post) |> noreply()
   end
 
   def handle_info({:DOWN, _ref, :process, _pid, reason}, socket) do
