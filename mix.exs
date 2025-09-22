@@ -11,7 +11,8 @@ defmodule MySystem.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      releases: releases()
     ]
   end
 
@@ -26,9 +27,13 @@ defmodule MySystem.MixProject do
     ]
   end
 
+  defp releases do
+    [my_system: [cookie: "super_secret"]]
+  end
+
   def cli do
     [
-      preferred_envs: [precommit: :test]
+      preferred_envs: [precommit: :test, release: :prod, upgrade: :prod]
     ]
   end
 

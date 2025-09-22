@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.MySystem.Upgrade do
+defmodule Mix.Tasks.Upgrade do
   # Mix.Task behaviour is not in PLT since Mix is not a runtime dep, so we disable the warning
   @dialyzer :no_undefined_callbacks
 
@@ -6,7 +6,7 @@ defmodule Mix.Tasks.MySystem.Upgrade do
 
   def run(_args) do
     Node.start(:"upgrader@127.0.0.1")
-    Node.set_cookie(:R2rFacBWe2cmw8gcEwpZOh)
+    Node.set_cookie(:super_secret)
     Node.connect(:"my_system_1@127.0.0.1")
 
     Enum.each(
