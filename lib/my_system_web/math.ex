@@ -10,7 +10,7 @@ defmodule MySystemWeb.Math do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
-      <div class="text-lg">
+      <div class="text-lg p-4 bg-base-300 rounded-lg">
         <form phx-submit="submit">
           <.input label="Input" type="number" name="number" value={@number} />
           <.button variant="primary">Calculate</.button>

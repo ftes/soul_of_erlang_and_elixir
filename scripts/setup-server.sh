@@ -19,15 +19,15 @@ sh install.sh elixir@1.18.4 otp@28.1
 echo 'export PATH=$HOME/.elixir-install/installs/otp/28.1/bin:$PATH' >> /etc/profile
 echo 'export PATH=$HOME/.elixir-install/installs/elixir/1.18.4-otp-27/bin:$PATH' >> /etc/profile
 echo "export MIX_ENV=prod" >> /etc/profile
-source ~/.bashrc
+source /etc/profile
 
 git clone https://github.com/ftes/soul_of_erlang_and_elixir.git app
 cd app
 mix local.hex --force
 mix deps.get
 mix compile
-echo "export SECRET_KEY_BASE=`mix phx.gen.secret`" >> ~/.bashrc
-source ~/.bashrc
+echo "export SECRET_KEY_BASE=`mix phx.gen.secret`" >> /etc/profile
+source /etc/profile
 mix assets.deploy
 mix release
 _build/prod/rel/my_system/bin/my_system daemon

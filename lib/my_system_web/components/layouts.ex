@@ -45,16 +45,17 @@ defmodule MySystemWeb.Layouts do
         </a>
       </div>
       <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li><a href={~p"/"} class="btn btn-ghost">Math</a></li>
-          <li><a href={~p"/dashboard"} class="btn btn-ghost">Metrics</a></li>
-          <li><a href={~p"/bulletin_board/building_blocks"} class="btn btn-ghost">Board</a></li>
+        <ul class="flex flex-column px-1 gap-x-1 md:gap-x-4 items-center">
+          <li><a href={~p"/"} class="btn btn-ghost max-sm:px-2">Math</a></li>
+          <li>
+            <a href={~p"/bulletin_board/buildingblocks"} class="btn btn-ghost max-sm:px-2">Board</a>
+          </li>
           <li><.theme_toggle /></li>
         </ul>
       </div>
     </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
+    <main class="px-4 py-10 md:py-20 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-2xl space-y-4">
         {render_slot(@inner_block)}
       </div>

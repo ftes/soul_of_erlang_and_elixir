@@ -38,7 +38,7 @@ defmodule MySystemWeb.BulletinBoard do
     ~H"""
     <Layouts.app flash={@flash}>
       <.header>{long_topic(@topic)}</.header>
-      <div :if={not @admin?} class="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg">
+      <div :if={not @admin?} class="p-4 bg-base-300 rounded-lg">
         <button phx-click={
           JS.toggle(to: "#form") |> JS.toggle_class("rotate-180", to: "#toggle-form-icon")
         }>
@@ -68,7 +68,7 @@ defmodule MySystemWeb.BulletinBoard do
         <li
           :for={{dom_id, post} <- @streams.posts}
           id={dom_id}
-          class="bg-slate-200 dark:bg-slate-700 p-4 rounded-lg relative"
+          class="bg-base-300 p-4 rounded-lg relative"
         >
           <pre class="text-xl">{post.text}</pre>
           <div class="text-right">{post.author}</div>
