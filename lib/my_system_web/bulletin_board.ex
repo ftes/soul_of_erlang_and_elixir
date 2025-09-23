@@ -10,6 +10,7 @@ defmodule MySystemWeb.BulletinBoard do
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     socket
+    |> assign(:page_title, "Board")
     |> assign(:form, to_form(%{}, as: :post))
     |> assign(:show_form, true)
     |> assign(:admin?, socket.assigns.live_action == :admin)

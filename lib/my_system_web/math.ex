@@ -3,7 +3,7 @@ defmodule MySystemWeb.Math do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    assign(socket, number: "", operations: []) |> ok()
+    assign(socket, number: "", operations: [], page_title: "Math") |> ok()
   end
 
   @impl Phoenix.LiveView
