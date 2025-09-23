@@ -4,7 +4,7 @@ defmodule MySystemWeb.BulletinBoardTest do
   describe "regular user" do
     test "add post", %{conn: conn} do
       conn
-      |> visit(~p"/bulletin_board/buildingblocks")
+      |> visit(~p"/board/buildingblocks")
       |> fill_in("Text", with: "Huhahahaha")
       |> fill_in("Author", with: "Woody Woodypecker")
       |> submit()
@@ -17,7 +17,7 @@ defmodule MySystemWeb.BulletinBoardTest do
       post_fixture(%{text: "My post"})
 
       conn
-      |> visit(~p"/bulletin_board/buildingblocks/admin")
+      |> visit(~p"/board/building-blocks/admin")
       |> assert_has("li", text: "My post", timeout: 1000)
       |> click_button("Delete post")
       |> refute_has("li", text: "My post")
@@ -25,7 +25,7 @@ defmodule MySystemWeb.BulletinBoardTest do
   end
 
   defp post_fixture(attrs) do
-    attrs = Enum.into(attrs, %{author: "author", text: "text", topic: "buildingblocks"})
+    attrs = Enum.into(attrs, %{author: "author", text: "text", topic: "building-blocks"})
     :ok = MySystem.BulletinBoard.save_post(attrs.author, attrs.text, attrs.topic)
   end
 end

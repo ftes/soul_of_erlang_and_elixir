@@ -1,8 +1,9 @@
 defmodule MySystemWeb.BulletinBoard do
   use MySystemWeb, :live_view
 
-  @buildingblocks "buildingblocks"
+  @buildingblocks "building-blocks"
   @observability "observability"
+  @pubsub_topic "bulletin-boards"
 
   defguardp is_admin(socket) when socket.assigns.admin? == true
 
@@ -17,18 +18,20 @@ defmodule MySystemWeb.BulletinBoard do
 
   @impl Phoenix.LiveView
   def handle_params(%{"topic" => topic}, _uri, socket)
-      when topic not in [@buildingblocks, @observability] do
-    push_navigate(socket, to: ~p"/bulletin_board/#{@buildingblocks}") |> noreply()
-  end
-
-  def handle_params(%{"topic" => topic}, _uri, socket) do
+      when topic in [@buildingblocks, @observability] do
     :ok = MySystem.BulletinBoard.subscribe(topic)
+    :ok = Phoenix.PubSub.subscribe(MySystem.PubSub, @pubsub_topic)
 
     socket
     |> assign(:topic, topic)
     |> assign(:topics, [@buildingblocks, @observability])
     |> load_posts()
     |> noreply()
+  end
+
+  def handle_params(_params, _uri, socket) do
+    topic = Application.fetch_env!(:my_system, :bulletin_board)
+    push_navigate(socket, to: ~p"/board/#{topic}") |> noreply()
   end
 
   @impl Phoenix.LiveView
@@ -38,7 +41,7 @@ defmodule MySystemWeb.BulletinBoard do
       <.header>{long_topic(@topic)}</.header>
       <form :if={@admin?} phx-change="change">
         <select name="topic" class="text-base-100 hover:cursor-pointer">
-          <option :for={topic <- @topics} selected={dbg(topic == @topic)} value={topic}>
+          <option :for={topic <- @topics} selected={topic == @topic} value={topic}>
             {topic}
           </option>
         </select>
@@ -94,7 +97,8 @@ defmodule MySystemWeb.BulletinBoard do
   @impl Phoenix.LiveView
   def handle_event("change", %{"topic" => topic}, socket) when is_admin(socket) do
     Application.put_env(:my_system, :bulletin_board, topic)
-    socket |> push_redirect(to: ~p"/bulletin_board/#{topic}/admin") |> noreply()
+    Phoenix.PubSub.broadcast!(MySystem.PubSub, @pubsub_topic, {:topic_changed, topic})
+    socket |> push_navigate(to: ~p"/board/#{topic}/admin") |> noreply()
   end
 
   def handle_event("validate", %{"post" => params}, socket) do
@@ -126,6 +130,14 @@ defmodule MySystemWeb.BulletinBoard do
 
   def handle_info({:deleted_post, post}, socket) do
     stream_delete(socket, :posts, post) |> noreply()
+  end
+
+  def handle_info({:topic_changed, topic}, socket) do
+    if topic != socket.assigns.topic do
+      push_navigate(socket, to: ~p"/board/#{topic}") |> noreply()
+    else
+      socket |> noreply()
+    end
   end
 
   def handle_info({:DOWN, _ref, :process, _pid, reason}, socket) do

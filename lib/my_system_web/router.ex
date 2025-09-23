@@ -18,25 +18,26 @@ defmodule MySystemWeb.Router do
   pipeline :authenticated do
     if Mix.env() != :test do
       plug :auth
-    end
-  end
 
-  defp auth(conn, _opts) do
-    password = System.get_env("ADMIN_PASSWORD", "secret")
-    Plug.BasicAuth.basic_auth(conn, username: "admin", password: password)
+      defp auth(conn, _opts) do
+        password = System.get_env("ADMIN_PASSWORD", "secret")
+        Plug.BasicAuth.basic_auth(conn, username: "admin", password: password)
+      end
+    end
   end
 
   scope "/", MySystemWeb do
     pipe_through :browser
 
     live "/", Math
-    live "/bulletin_board/:topic", BulletinBoard
+    live "/board", BulletinBoard
+    live "/board/:topic", BulletinBoard
   end
 
   scope "/", MySystemWeb do
     pipe_through [:browser, :authenticated]
 
-    live "/bulletin_board/:topic/admin", BulletinBoard, :admin
+    live "/board/:topic/admin", BulletinBoard, :admin
 
     live_dashboard "/dashboard",
       metrics: MySystemWeb.Telemetry,
