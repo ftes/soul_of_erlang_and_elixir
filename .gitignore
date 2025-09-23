@@ -39,4 +39,5 @@ npm-debug.log
 .elixir_ls/
 
 /Mnesia.nonode@nohost/
+/Mnesia.my_system_1@127.0.0.1/
 .DS_Store
