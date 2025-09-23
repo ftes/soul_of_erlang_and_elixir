@@ -66,7 +66,14 @@ defmodule MySystemWeb.BulletinBoard do
             />
           </div>
           <div class="mt-2 block">
-            <.input sr_label="Author" placeholder="Your name" field={@form[:author]} id="author" phx-hook=".PreserveAuthor" phx-debounce />
+            <.input
+              sr_label="Author"
+              placeholder="Your name"
+              field={@form[:author]}
+              id="author"
+              phx-hook=".PreserveAuthor"
+              phx-debounce
+            />
             <script :type={Phoenix.LiveView.ColocatedHook} name=".PreserveAuthor">
               export default {
                 mounted() {
@@ -100,7 +107,7 @@ defmodule MySystemWeb.BulletinBoard do
           id={dom_id}
           class="bg-base-300 p-4 rounded-lg relative"
         >
-          <pre class="text-xl">{post.text}</pre>
+          <div class={["text-xl whitespace-pre-wrap", @admin? && "pr-3"]}>{post.text}</div>
           <div class="text-right">{post.author}</div>
           <button
             :if={@admin?}
@@ -171,7 +178,7 @@ defmodule MySystemWeb.BulletinBoard do
   end
 
   defp load_posts(socket) do
-    {:ok, posts} = MySystem.BulletinBoard.list_posts(socket.assigns.topic, 0, 100)
+    {:ok, posts} = MySystem.BulletinBoard.list_posts(socket.assigns.topic)
     stream(socket, :posts, Enum.reverse(posts), reset: true)
   end
 

@@ -32,14 +32,12 @@ defmodule MySystem.BulletinBoard do
     pid
   end
 
-  def list_posts(topic, start_id, pagesize \\ 100) do
+  def list_posts(topic) do
     Mnesia.transaction(fn ->
       Mnesia.select(Post, [
         {
           {Post, :"$1", :"$2", :"$3", :"$4", :"$5"},
           [
-            {:>, :"$1", start_id},
-            {:<, :"$1", start_id + pagesize},
             {:"=:=", :"$5", topic}
           ],
           [:"$$"]
