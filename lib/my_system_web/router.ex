@@ -15,12 +15,15 @@ defmodule MySystemWeb.Router do
     plug :accepts, ["json"]
   end
 
-  import Plug.BasicAuth
-
   pipeline :authenticated do
     if Mix.env() != :test do
-      plug :basic_auth, username: "hello", password: "secret"
+      plug :auth
     end
+  end
+
+  defp auth(conn, _opts) do
+    password = System.get_env("ADMIN_PASSWORD", "secret")
+    Plug.BasicAuth.basic_auth(conn, username: "admin", password: password)
   end
 
   scope "/", MySystemWeb do
