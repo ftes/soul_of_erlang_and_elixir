@@ -25,9 +25,7 @@ defmodule Runtime do
   end
 
   def kill_math do
-    Process.list()
-    |> Enum.filter(&({:current_function, {MySystem.Math, :calc_sum, 3}} == Process.info(&1, :current_function)))
-    |> Enum.map(&Process.exit(&1, :kill))
+    Parent.Client.shutdown_all(MySystem.Math)
   end
 
   defp processes do
