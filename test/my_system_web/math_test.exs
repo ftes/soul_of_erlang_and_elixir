@@ -1,5 +1,5 @@
 defmodule MySystemWeb.MathTest do
-  use MySystemWeb.ConnCase, async: true
+  use MySystemWeb.ConnCase, async: false
 
   test "it works", %{conn: conn} do
     conn

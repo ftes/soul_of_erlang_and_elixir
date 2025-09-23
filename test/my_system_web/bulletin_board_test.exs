@@ -1,5 +1,5 @@
 defmodule MySystemWeb.BulletinBoardTest do
-  use MySystemWeb.ConnCase, async: true
+  use MySystemWeb.ConnCase, async: false
 
   describe "regular user" do
     test "add post", %{conn: conn} do
