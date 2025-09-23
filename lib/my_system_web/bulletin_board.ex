@@ -26,18 +26,23 @@ defmodule MySystemWeb.BulletinBoard do
 
     socket
     |> assign(:topic, topic)
+    |> assign(:topics, [@buildingblocks, @observability])
     |> load_posts()
     |> noreply()
   end
-
-  defp long_topic(@buildingblocks), do: "What are your building blocks for robust systems?"
-  defp long_topic(@observability), do: "How do you find a misbehaving part of your software?"
 
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
       <.header>{long_topic(@topic)}</.header>
+      <form :if={@admin?} phx-change="change">
+        <select name="topic" class="text-base-100 hover:cursor-pointer">
+          <option :for={topic <- @topics} selected={dbg(topic == @topic)} value={topic}>
+            {topic}
+          </option>
+        </select>
+      </form>
       <div :if={not @admin?} class="p-4 bg-base-300 rounded-lg">
         <button phx-click={
           JS.toggle(to: "#form") |> JS.toggle_class("rotate-180", to: "#toggle-form-icon")
@@ -87,6 +92,11 @@ defmodule MySystemWeb.BulletinBoard do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("change", %{"topic" => topic}, socket) when is_admin(socket) do
+    Application.put_env(:my_system, :bulletin_board, topic)
+    socket |> push_redirect(to: ~p"/bulletin_board/#{topic}/admin") |> noreply()
+  end
+
   def handle_event("validate", %{"post" => params}, socket) do
     changeset = change_post(params) |> Map.put(:action, :validate)
     assign(socket, :form, to_form(changeset, as: :post)) |> noreply()
@@ -147,4 +157,7 @@ defmodule MySystemWeb.BulletinBoard do
     |> Ecto.Changeset.validate_length(:author, min: 3)
     |> Ecto.Changeset.validate_length(:text, min: 3)
   end
+
+  defp long_topic(@buildingblocks), do: "What are your building blocks for robust systems?"
+  defp long_topic(@observability), do: "How do you find a misbehaving part of your software?"
 end

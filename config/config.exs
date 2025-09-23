@@ -30,6 +30,8 @@ config :my_system, MySystemWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :my_system, MySystem.Mailer, adapter: Swoosh.Adapters.Local
 
+config :my_system, :bulletin_board, "buildingblocks"
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",

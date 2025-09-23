@@ -48,7 +48,12 @@ defmodule MySystemWeb.Layouts do
         <ul class="flex flex-column px-1 gap-x-1 md:gap-x-4 items-center">
           <li><a href={~p"/"} class="btn btn-ghost max-sm:px-2">Math</a></li>
           <li>
-            <a href={~p"/bulletin_board/buildingblocks"} class="btn btn-ghost max-sm:px-2">Board</a>
+            <a
+              href={~p"/bulletin_board/#{Application.fetch_env!(:my_system, :bulletin_board)}"}
+              class="btn btn-ghost max-sm:px-2"
+            >
+              Board
+            </a>
           </li>
           <li><.theme_toggle /></li>
         </ul>
