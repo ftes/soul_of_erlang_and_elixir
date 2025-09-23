@@ -24,12 +24,20 @@ defmodule Runtime do
     |> Enum.map(&%{pid: &1.pid, cpu: round(schedulers_usage * 100 * &1.reds / total_reds_delta)})
   end
 
+  def kill_math do
+    Process.list()
+    |> Enum.filter(&({:current_function, {MySystem.Math, :calc_sum, 3}} == Process.info(&1, :current_function)))
+    |> Enum.map(&Process.exit(&1, :kill))
+  end
+
   defp processes do
     for {pid, {:reductions, reds}} <-
           Stream.map(Process.list(), &{&1, Process.info(&1, :reductions)}),
         into: %{},
         do: {pid, reds}
   end
+
+  def stacktrace(pid), do: Process.info(pid, :current_stacktrace)
 
   def trace(pid) do
     fn ->
