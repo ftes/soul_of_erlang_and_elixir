@@ -18,10 +18,17 @@ defmodule MySystemWeb.BulletinBoard do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(%{"topic" => topic}, _uri, socket)
+  def handle_params(%{"topic" => topic}, _, socket)
       when topic in [@buildingblocks, @observability] do
+    %{admin?: admin?} = socket.assigns
+
     :ok = MySystem.BulletinBoard.subscribe(topic)
-    :ok = Phoenix.PubSub.subscribe(MySystem.PubSub, @pubsub_topic)
+    if not admin?, do: :ok = Phoenix.PubSub.subscribe(MySystem.PubSub, @pubsub_topic)
+
+    if admin? and topic != default_topic() do
+      put_default_topic(topic)
+      Phoenix.PubSub.broadcast!(MySystem.PubSub, @pubsub_topic, {:topic_changed, topic})
+    end
 
     socket
     |> assign(:topic, topic)
@@ -31,8 +38,7 @@ defmodule MySystemWeb.BulletinBoard do
   end
 
   def handle_params(_params, _uri, socket) do
-    topic = Application.fetch_env!(:my_system, :bulletin_board)
-    push_navigate(socket, to: ~p"/board/#{topic}") |> noreply()
+    push_navigate(socket, to: ~p"/board/#{default_topic()}") |> noreply()
   end
 
   @impl Phoenix.LiveView
@@ -125,8 +131,6 @@ defmodule MySystemWeb.BulletinBoard do
 
   @impl Phoenix.LiveView
   def handle_event("change", %{"topic" => topic}, socket) when is_admin(socket) do
-    Application.put_env(:my_system, :bulletin_board, topic)
-    Phoenix.PubSub.broadcast!(MySystem.PubSub, @pubsub_topic, {:topic_changed, topic})
     socket |> push_navigate(to: ~p"/board/#{topic}/admin") |> noreply()
   end
 
@@ -201,4 +205,7 @@ defmodule MySystemWeb.BulletinBoard do
 
   defp long_topic(@buildingblocks), do: "What are your building blocks for robust systems?"
   defp long_topic(@observability), do: "How do you find a misbehaving part of your software?"
+
+  defp default_topic(), do: Application.fetch_env!(:my_system, :bulletin_board)
+  defp put_default_topic(topic), do: Application.put_env(:my_system, :bulletin_board, topic)
 end
