@@ -1,8 +1,8 @@
 defmodule MySystem.LoadControl do
+  @moduledoc false
   use Parent.GenServer
 
-  def start_link(arg),
-    do: Parent.GenServer.start_link(__MODULE__, arg, name: __MODULE__)
+  def start_link(arg), do: Parent.GenServer.start_link(__MODULE__, arg, name: __MODULE__)
 
   def set_load(value) do
     :ets.insert(__MODULE__, {:target_load, value})
@@ -17,8 +17,7 @@ defmodule MySystem.LoadControl do
     :erlang.system_flag(:dirty_cpu_schedulers_online, num)
   end
 
-  def num_schedulers,
-    do: :erlang.system_info(:schedulers_online)
+  def num_schedulers, do: :erlang.system_info(:schedulers_online)
 
   def subscribe do
     Registry.register(__MODULE__.Notifications, :subscriber, nil)
@@ -69,8 +68,7 @@ defmodule MySystem.LoadControl do
     {:noreply, state}
   end
 
-  def handle_cast(:worker_success, state),
-    do: {:noreply, %{state | successes: state.successes + 1}}
+  def handle_cast(:worker_success, state), do: {:noreply, %{state | successes: state.successes + 1}}
 
   @impl GenServer
   def handle_info(:aggregate_successes, state) do
@@ -98,12 +96,13 @@ defmodule MySystem.LoadControl do
   defp run_worker(id) do
     Process.sleep(:rand.uniform(1000))
 
-    Stream.repeatedly(fn ->
+    fn ->
       _ = Enum.reduce(1..100, 0, &(&1 + &2))
       :erlang.garbage_collect()
       :ets.update_counter(__MODULE__, :successes, 1, {:successes, 0})
       Process.sleep(1000)
-    end)
+    end
+    |> Stream.repeatedly()
     |> Stream.take_while(fn _ -> id < local_load() end)
     |> Stream.run()
   end
@@ -116,36 +115,34 @@ defmodule MySystem.LoadControl do
   defp run_success_reporter do
     now = :erlang.monotonic_time()
 
-    Stream.iterate(
-      %{recorded_at: now, success_values: []},
-      fn state ->
-        Process.sleep(100)
-        now = :erlang.monotonic_time()
+    %{recorded_at: now, success_values: []}
+    |> Stream.iterate(fn state ->
+      Process.sleep(100)
+      now = :erlang.monotonic_time()
 
-        successes =
-          case :ets.take(__MODULE__, :successes) do
-            [{:successes, value}] -> value
-            [] -> 0
-          end
+      successes =
+        case :ets.take(__MODULE__, :successes) do
+          [{:successes, value}] -> value
+          [] -> 0
+        end
 
-        diff = :erlang.convert_time_unit(now - state.recorded_at, :native, :millisecond)
-        success_value = successes * 1000 / diff
-        success_values = Enum.take([success_value | state.success_values], num_points())
+      diff = :erlang.convert_time_unit(now - state.recorded_at, :native, :millisecond)
+      success_value = successes * 1000 / diff
+      success_values = Enum.take([success_value | state.success_values], num_points())
 
-        notify({__MODULE__, :success_values, success_values})
+      notify({__MODULE__, :success_values, success_values})
 
-        %{state | recorded_at: now, success_values: success_values}
-      end
-    )
+      %{state | recorded_at: now, success_values: success_values}
+    end)
     |> Stream.run()
   end
 
   defp local_load do
     num_nodes =
-      Node.list([:this, :visible])
+      [:this, :visible]
+      |> Node.list()
       |> Enum.map(&to_string/1)
-      |> Enum.filter(&(&1 =~ ~r/^my_system_\d+@/))
-      |> Enum.count()
+      |> Enum.count(&(&1 =~ ~r/^my_system_\d+@/))
 
     round(target_load() / max(num_nodes, 1))
   end
@@ -165,7 +162,7 @@ defmodule MySystem.LoadControl do
       set_load(max_load)
     end
 
-    Process.sleep(:timer.seconds(1))
+    Process.sleep(to_timeout(second: 1))
     run_cluster_load()
   end
 end

@@ -33,11 +33,11 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  config :my_system, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
-
   config :my_system, MySystemWeb.Endpoint,
     url: [host: "dcon-elixir.ftes.de"],
     secret_key_base: secret_key_base
+
+  config :my_system, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
   # ## SSL Support
   #

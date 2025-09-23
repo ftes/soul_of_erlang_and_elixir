@@ -1,9 +1,10 @@
 defmodule MySystemWeb.Math do
+  @moduledoc false
   use MySystemWeb, :live_view
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    assign(socket, number: "", operations: [], page_title: "Math") |> ok()
+    socket |> assign(number: "", operations: [], page_title: "Math") |> ok()
   end
 
   @impl Phoenix.LiveView
@@ -38,15 +39,13 @@ defmodule MySystemWeb.Math do
         {number, ""} -> start_sum(number)
       end
 
-    update(socket, :operations, &[operation | &1]) |> noreply()
+    socket |> update(:operations, &[operation | &1]) |> noreply()
   end
 
   @impl Phoenix.LiveView
-  def handle_info({:sum, pid, result}, socket),
-    do: set_result(socket, pid, result) |> noreply()
+  def handle_info({:sum, pid, result}, socket), do: socket |> set_result(pid, result) |> noreply()
 
-  def handle_info({:DOWN, _ref, :process, pid, _reason}, socket),
-    do: set_result(socket, pid, :error) |> noreply()
+  def handle_info({:DOWN, _ref, :process, pid, _reason}, socket), do: socket |> set_result(pid, :error) |> noreply()
 
   defp start_sum(number) do
     pid = MySystem.Math.sum(number)
@@ -62,6 +61,5 @@ defmodule MySystemWeb.Math do
     end)
   end
 
-  defp outcome(input, result),
-    do: %{pid: nil, input: input, result: result}
+  defp outcome(input, result), do: %{pid: nil, input: input, result: result}
 end

@@ -1,9 +1,10 @@
 defmodule MySystem.BulletinBoard do
+  @moduledoc false
   use Parent.Supervisor
 
-  require Logger
-
   alias :mnesia, as: Mnesia
+
+  require Logger
 
   @attributes [:id, :timestamp, :author, :text, :topic]
 
@@ -33,7 +34,7 @@ defmodule MySystem.BulletinBoard do
   end
 
   def list_posts(topic) do
-    Mnesia.transaction(fn ->
+    fn ->
       Mnesia.select(Post, [
         {
           {Post, :"$1", :"$2", :"$3", :"$4", :"$5"},
@@ -43,7 +44,8 @@ defmodule MySystem.BulletinBoard do
           [:"$$"]
         }
       ])
-    end)
+    end
+    |> Mnesia.transaction()
     |> unwrap_atomic()
     |> result_to_map()
   end
@@ -53,9 +55,10 @@ defmodule MySystem.BulletinBoard do
   end
 
   def delete_post(topic, id) do
-    Mnesia.transaction(fn ->
+    fn ->
       Mnesia.delete({Post, id})
-    end)
+    end
+    |> Mnesia.transaction()
     |> unwrap_atomic()
     |> maybe_notify_subscribers(topic, :deleted_post, %{id: id})
   end
@@ -63,19 +66,20 @@ defmodule MySystem.BulletinBoard do
   def save_post(author, text, topic) do
     id = Mnesia.dirty_update_counter(Counter, Post, 1)
 
-    Mnesia.transaction(fn ->
+    fn ->
       Mnesia.write({Post, id, DateTime.utc_now(), author, text, topic})
-    end)
+    end
+    |> Mnesia.transaction()
     |> unwrap_atomic()
     |> maybe_notify_subscribers(topic, :new_post, %{id: id, text: text, author: author})
   end
 
-  def reset() do
+  def reset do
     Mnesia.delete_table(Post)
     ensure_tables_exist()
   end
 
-  defp ensure_tables_exist() do
+  defp ensure_tables_exist do
     status =
       Mnesia.create_table(Counter,
         attributes: [:table, :counter],
@@ -119,8 +123,7 @@ defmodule MySystem.BulletinBoard do
 
   defp result_to_map({:ok, result}) do
     {:ok,
-     result
-     |> Enum.map(fn post ->
+     Enum.map(result, fn post ->
        @attributes
        |> Enum.zip(post)
        |> Map.new()

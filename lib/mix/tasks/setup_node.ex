@@ -1,8 +1,9 @@
 defmodule Mix.Tasks.SetupNode do
   # Mix.Task behaviour is not in PLT since Mix is not a runtime dep, so we disable the warning
-  @dialyzer :no_undefined_callbacks
-
+  @moduledoc false
   use Mix.Task
+
+  @dialyzer :no_undefined_callbacks
 
   def run(_args) do
     {:ok, nodes} = :erl_epmd.names(~c"127.0.0.1")
@@ -15,7 +16,8 @@ defmodule Mix.Tasks.SetupNode do
           do: node_name
 
     node_name =
-      Stream.iterate(1, &(&1 + 1))
+      1
+      |> Stream.iterate(&(&1 + 1))
       |> Stream.map(&"my_system_#{&1}")
       |> Enum.find(&(not MapSet.member?(nodes, &1)))
 

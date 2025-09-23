@@ -1,8 +1,8 @@
 defmodule MySystem.Math do
+  @moduledoc false
   use Parent.Supervisor
 
-  def start_link(_arg),
-    do: Parent.Supervisor.start_link([], name: __MODULE__)
+  def start_link(_arg), do: Parent.Supervisor.start_link([], name: __MODULE__)
 
   def sum(number) do
     caller = self()

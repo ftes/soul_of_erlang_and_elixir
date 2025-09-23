@@ -1,8 +1,8 @@
 defmodule MySystem.LoadControl.SchedulerMonitor do
+  @moduledoc false
   use GenServer
 
-  def start_link(arg),
-    do: GenServer.start_link(__MODULE__, arg)
+  def start_link(arg), do: GenServer.start_link(__MODULE__, arg)
 
   @impl GenServer
   def init(_arg) do
@@ -29,6 +29,5 @@ defmodule MySystem.LoadControl.SchedulerMonitor do
     {:noreply, %{sample: new_sample, utilizations: utilizations}}
   end
 
-  defp enqueue_next_tick(),
-    do: Process.send_after(self(), :calc_utilization, 100)
+  defp enqueue_next_tick, do: Process.send_after(self(), :calc_utilization, 100)
 end

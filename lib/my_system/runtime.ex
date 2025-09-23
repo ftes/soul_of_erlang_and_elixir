@@ -1,5 +1,6 @@
 defmodule Runtime do
-  def top(time \\ :timer.seconds(1)) do
+  @moduledoc false
+  def top(time \\ to_timeout(second: 1)) do
     wall_times = wall_times()
     initial_processes = processes()
 
@@ -23,7 +24,7 @@ defmodule Runtime do
     |> Enum.map(&%{pid: &1.pid, cpu: round(schedulers_usage * 100 * &1.reds / total_reds_delta)})
   end
 
-  defp processes() do
+  defp processes do
     for {pid, {:reductions, reds}} <-
           Stream.map(Process.list(), &{&1, Process.info(&1, :reductions)}),
         into: %{},
@@ -31,7 +32,7 @@ defmodule Runtime do
   end
 
   def trace(pid) do
-    Task.async(fn ->
+    fn ->
       :erlang.trace(pid, true, [:call])
 
       try do
@@ -42,7 +43,7 @@ defmodule Runtime do
       else
         _ ->
           :erlang.trace_pattern({:_, :_, :_}, true, [:local])
-          Process.send_after(self(), :stop_trace, :timer.seconds(1))
+          Process.send_after(self(), :stop_trace, to_timeout(second: 1))
 
           fn ->
             receive do
@@ -54,7 +55,8 @@ defmodule Runtime do
           |> Stream.take(50)
           |> Enum.take_while(&(&1 != :stop_trace))
       end
-    end)
+    end
+    |> Task.async()
     |> Task.await()
   end
 
@@ -84,14 +86,13 @@ defmodule Runtime do
     )
   end
 
-  defp usage(new_time, previous_time),
-    do: {new_time.active - previous_time.active, new_time.total - previous_time.total}
+  defp usage(new_time, previous_time), do: {new_time.active - previous_time.active, new_time.total - previous_time.total}
 
-  def wall_times() do
-    :erlang.statistics(:scheduler_wall_time)
-    |> Enum.map(fn {id, active_time, total_time} ->
+  def wall_times do
+    :scheduler_wall_time
+    |> :erlang.statistics()
+    |> Map.new(fn {id, active_time, total_time} ->
       {id, %{active: active_time, total: total_time}}
     end)
-    |> Enum.into(%{})
   end
 end

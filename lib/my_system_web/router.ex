@@ -1,5 +1,6 @@
 defmodule MySystemWeb.Router do
   use MySystemWeb, :router
+
   import Phoenix.LiveDashboard.Router
 
   pipeline :browser do

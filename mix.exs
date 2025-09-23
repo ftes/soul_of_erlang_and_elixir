@@ -55,12 +55,7 @@ defmodule MySystem.MixProject do
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
       {:heroicons,
-       github: "tailwindlabs/heroicons",
-       tag: "v2.2.0",
-       sparse: "optimized",
-       app: false,
-       compile: false,
-       depth: 1},
+       github: "tailwindlabs/heroicons", tag: "v2.2.0", sparse: "optimized", app: false, compile: false, depth: 1},
       {:swoosh, "~> 1.16"},
       {:req, "~> 0.5"},
       {:telemetry_metrics, "~> 1.0"},
@@ -72,7 +67,8 @@ defmodule MySystem.MixProject do
       {:parent, "~> 0.12.0"},
       {:ecto, "~> 3.13"},
       {:phoenix_ecto, "~> 4.0"},
-      {:phoenix_test, "~> 0.8.1", only: :test, runtime: false}
+      {:phoenix_test, "~> 0.8.1", only: :test, runtime: false},
+      {:styler, "~> 1.9", only: [:dev, :test], runtime: false}
     ]
   end
 

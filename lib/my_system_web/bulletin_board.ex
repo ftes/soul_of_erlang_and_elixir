@@ -1,4 +1,5 @@
 defmodule MySystemWeb.BulletinBoard do
+  @moduledoc false
   use MySystemWeb, :live_view
 
   @buildingblocks "building-blocks"
@@ -18,8 +19,7 @@ defmodule MySystemWeb.BulletinBoard do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(%{"topic" => topic}, _, socket)
-      when topic in [@buildingblocks, @observability] do
+  def handle_params(%{"topic" => topic}, _, socket) when topic in [@buildingblocks, @observability] do
     %{admin?: admin?} = socket.assigns
 
     :ok = MySystem.BulletinBoard.subscribe(topic)
@@ -38,7 +38,7 @@ defmodule MySystemWeb.BulletinBoard do
   end
 
   def handle_params(_params, _uri, socket) do
-    push_navigate(socket, to: ~p"/board/#{default_topic()}") |> noreply()
+    socket |> push_navigate(to: ~p"/board/#{default_topic()}") |> noreply()
   end
 
   @impl Phoenix.LiveView
@@ -135,19 +135,19 @@ defmodule MySystemWeb.BulletinBoard do
   end
 
   def handle_event("validate", %{"post" => params}, socket) do
-    changeset = change_post(params) |> Map.put(:action, :validate)
-    assign(socket, :form, to_form(changeset, as: :post)) |> noreply()
+    changeset = params |> change_post() |> Map.put(:action, :validate)
+    socket |> assign(:form, to_form(changeset, as: :post)) |> noreply()
   end
 
   def handle_event("submit", %{"post" => params}, socket) do
-    changeset = change_post(params) |> Map.put(:action, :insert)
+    changeset = params |> change_post() |> Map.put(:action, :insert)
 
     if changeset.valid? do
       %{author: author, text: text} = Ecto.Changeset.apply_changes(changeset)
       _pid = MySystem.BulletinBoard.publish_post(author, text, socket.assigns.topic)
-      assign(socket, :form, to_form(%{}, as: :post)) |> noreply()
+      socket |> assign(:form, to_form(%{}, as: :post)) |> noreply()
     else
-      assign(socket, :form, to_form(changeset, as: :post)) |> noreply()
+      socket |> assign(:form, to_form(changeset, as: :post)) |> noreply()
     end
   end
 
@@ -158,26 +158,26 @@ defmodule MySystemWeb.BulletinBoard do
 
   @impl true
   def handle_info({:new_post, post}, socket) do
-    stream_insert(socket, :posts, post, at: 0) |> noreply()
+    socket |> stream_insert(:posts, post, at: 0) |> noreply()
   end
 
   def handle_info({:deleted_post, post}, socket) do
-    stream_delete(socket, :posts, post) |> noreply()
+    socket |> stream_delete(:posts, post) |> noreply()
   end
 
   def handle_info({:topic_changed, topic}, socket) do
-    if topic != socket.assigns.topic do
-      push_navigate(socket, to: ~p"/board/#{topic}") |> noreply()
+    if topic == socket.assigns.topic do
+      noreply(socket)
     else
-      socket |> noreply()
+      socket |> push_navigate(to: ~p"/board/#{topic}") |> noreply()
     end
   end
 
   def handle_info({:DOWN, _ref, :process, _pid, reason}, socket) do
-    if reason != :normal do
-      put_flash(socket, :error, "Posting of Message failed.") |> noreply()
-    else
+    if reason == :normal do
       noreply(socket)
+    else
+      socket |> put_flash(:error, "Posting of Message failed.") |> noreply()
     end
   end
 
@@ -206,6 +206,6 @@ defmodule MySystemWeb.BulletinBoard do
   defp long_topic(@buildingblocks), do: "What are your building blocks for robust systems?"
   defp long_topic(@observability), do: "How do you find a misbehaving part of your software?"
 
-  defp default_topic(), do: Application.fetch_env!(:my_system, :bulletin_board)
+  defp default_topic, do: Application.fetch_env!(:my_system, :bulletin_board)
   defp put_default_topic(topic), do: Application.put_env(:my_system, :bulletin_board, topic)
 end

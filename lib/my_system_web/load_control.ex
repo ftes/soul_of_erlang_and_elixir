@@ -1,21 +1,24 @@
 defmodule MySystemWeb.LoadControl do
   @moduledoc false
   use Phoenix.LiveDashboard.PageBuilder
+
   import MySystemWeb.CoreComponents
 
-  @impl Phoenix.LiveDashboard.PageBuilder
+  alias Phoenix.LiveDashboard.PageBuilder
+
+  @impl PageBuilder
   def mount(_params, _session, socket) do
     socket = assign(socket, scheduler_utilizations: [], success_values: [])
     if connected?(socket), do: MySystem.LoadControl.subscribe()
     {:ok, form_data(socket)}
   end
 
-  @impl Phoenix.LiveDashboard.PageBuilder
+  @impl PageBuilder
   def menu_link(_session, _capabilities) do
     {:ok, "Load control"}
   end
 
-  @impl Phoenix.LiveDashboard.PageBuilder
+  @impl PageBuilder
   def render(assigns) do
     ~H"""
     <.form for={@form} phx-submit="submit_form">
@@ -33,7 +36,7 @@ defmodule MySystemWeb.LoadControl do
     """
   end
 
-  @impl Phoenix.LiveDashboard.PageBuilder
+  @impl PageBuilder
   def handle_event("submit_form", params, socket) do
     with {:ok, string} <- Map.fetch(params, "schedulers_online"),
          {value, ""} <- Integer.parse(string),
@@ -46,7 +49,7 @@ defmodule MySystemWeb.LoadControl do
     {:noreply, form_data(socket)}
   end
 
-  @impl Phoenix.LiveDashboard.PageBuilder
+  @impl PageBuilder
   def handle_info({:scheduler_utilizations, utilizations}, socket) do
     socket
     |> assign(:scheduler_utilizations, utilizations)
@@ -177,11 +180,10 @@ defmodule MySystemWeb.LoadControl do
     assigns.points
     |> moving_averages(10)
     |> Enum.with_index(1)
-    |> Enum.map(fn {value, pos} ->
+    |> Enum.map_join(" ", fn {value, pos} ->
       x = assigns.width - pos
       "#{x},#{y(value, assigns.height)}"
     end)
-    |> Enum.join(" ")
   end
 
   defp moving_averages(values, size) do
