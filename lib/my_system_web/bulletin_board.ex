@@ -66,7 +66,28 @@ defmodule MySystemWeb.BulletinBoard do
             />
           </div>
           <div class="mt-2 block">
-            <.input sr_label="Author" placeholder="Your name" field={@form[:author]} phx-debounce />
+            <.input sr_label="Author" placeholder="Your name" field={@form[:author]} id="author" phx-hook=".PreserveAuthor" phx-debounce />
+            <script :type={Phoenix.LiveView.ColocatedHook} name=".PreserveAuthor">
+              export default {
+                mounted() {
+                  this.readFromLocalStorage()
+                  this.el.addEventListener('input', (e) => {
+                    localStorage.setItem('author', e.target.value)
+                  })
+                },
+
+                updated() {
+                  this.readFromLocalStorage()
+                },
+
+                readFromLocalStorage() {
+                  const savedAuthor = localStorage.getItem('author')
+                  if (savedAuthor && this.el.value === '') {
+                    this.el.value = savedAuthor
+                  }
+                }
+              }
+            </script>
             <.button type="submit" variant="primary" phx-disable-with="Publishing...">
               Publish
             </.button>
