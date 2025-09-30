@@ -1,6 +1,6 @@
 # MySystem
 
-This is updated source code of the demo used in my talk [Soul of Erlang and Elixir](https://www.youtube.com/watch?v=JvBT4XBdoUE). Note that some changes have been made compared to the original demo (the code of which can be found [here](https://github.com/sasa1977/demo_system)).
+This is updated source code of the demo used in Sasa Juric's talk [Soul of Erlang and Elixir](https://www.youtube.com/watch?v=JvBT4XBdoUE).
 
 ## Usage
 
